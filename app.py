@@ -1,17 +1,19 @@
-from flask import Flask, request, jsonify
+from flask import request, jsonify, Flask
 from flask_sqlalchemy import SQLAlchemy
+
 from datetime import datetime
 from dotenv import load_dotenv
-import os 
+import os
 
 load_dotenv()
 
 
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///my_project.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@localhost/{os.getenv('MYSQL_DATABASE')}'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@localhost/{os.getenv('MYSQL_DATABASE')}"
 db = SQLAlchemy(app)
 
+# with app.app_context():
+#     db.create_all()
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,13 +26,13 @@ class Task(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-with app.app_context():
-    db.create_all()
-
-
 @app.route('/tasks', methods=['GET', 'POST'])
 def tasks_endpoints():
     if request.method == 'POST':
+        title = request.form.get('title')
+        if not title:
+            return {'Error!': 'Required field: title(string)'}
+        
         data = {
             'title': request.form.get('title'),
             'description': request.form.get('description'),
@@ -74,4 +76,3 @@ def task_endpoints(id):
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
