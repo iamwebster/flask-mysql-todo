@@ -78,3 +78,8 @@ def task_endpoints(id: int):
         db.session.delete(task)
         db.session.commit()
         return jsonify({'message': 'Task was deleted successfully'})
+
+
+with app.app_context():
+    db.create_all()
+    
